@@ -7,10 +7,10 @@ postgres_delete:
 postgres_logs:
 	docker logs auth_postgres -f --tail=30
 
-postgres_up:
+migrate_up:
 	migrate -path ./database/postgres -database postgres://simple:simple@localhost:8101/simple?sslmode=disable -verbose up
 
-postgres_down:
+migrate_down:
 	migrate -path ./database/postgres -database postgres://simple:simple@localhost:8101/simple?sslmode=disable -verbose down
 
 generate:
