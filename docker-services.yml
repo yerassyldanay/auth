@@ -5,7 +5,7 @@ services:
     restart: always
     build: ./env/postgre/
     env_file:
-      - "env/.env"
+      - "env/smtp.env"
     environment:
       - "TZ=Asia/Almaty"
       - "POSTGRES_DB=invest"

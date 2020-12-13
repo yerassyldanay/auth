@@ -9,103 +9,104 @@ import (
 )
 
 const emailConfirmByAddress = `-- name: EmailConfirmByAddress :one
-update emails set is_email_confirmed = true, email_confirmed_at = now() where address = $1 returning id, address, email_confirmed_at, is_email_confirmed
+update emails set email_confirmed_at = $1 where address = $2 returning id, address, email_confirmed_at
 `
 
-func (q *Queries) EmailConfirmByAddress(ctx context.Context, address sql.NullString) (Email, error) {
-	row := q.db.QueryRowContext(ctx, emailConfirmByAddress, address)
+type EmailConfirmByAddressParams struct {
+	EmailConfirmedAt sql.NullTime `json:"email_confirmed_at"`
+	Address          string       `json:"address"`
+}
+
+func (q *Queries) EmailConfirmByAddress(ctx context.Context, arg EmailConfirmByAddressParams) (Email, error) {
+	row := q.db.QueryRowContext(ctx, emailConfirmByAddress, arg.EmailConfirmedAt, arg.Address)
 	var i Email
-	err := row.Scan(
-		&i.ID,
-		&i.Address,
-		&i.EmailConfirmedAt,
-		&i.IsEmailConfirmed,
-	)
+	err := row.Scan(&i.ID, &i.Address, &i.EmailConfirmedAt)
 	return i, err
 }
 
 const emailConfirmById = `-- name: EmailConfirmById :one
-update emails set is_email_confirmed = true, email_confirmed_at = now() where id = $1 returning id, address, email_confirmed_at, is_email_confirmed
+update emails set email_confirmed_at = $1 where id = $2 returning id, address, email_confirmed_at
 `
 
-func (q *Queries) EmailConfirmById(ctx context.Context, id int64) (Email, error) {
-	row := q.db.QueryRowContext(ctx, emailConfirmById, id)
+type EmailConfirmByIdParams struct {
+	EmailConfirmedAt sql.NullTime `json:"email_confirmed_at"`
+	ID               int64        `json:"id"`
+}
+
+func (q *Queries) EmailConfirmById(ctx context.Context, arg EmailConfirmByIdParams) (Email, error) {
+	row := q.db.QueryRowContext(ctx, emailConfirmById, arg.EmailConfirmedAt, arg.ID)
 	var i Email
-	err := row.Scan(
-		&i.ID,
-		&i.Address,
-		&i.EmailConfirmedAt,
-		&i.IsEmailConfirmed,
-	)
+	err := row.Scan(&i.ID, &i.Address, &i.EmailConfirmedAt)
 	return i, err
 }
 
 const emailCreateConfirmedOne = `-- name: EmailCreateConfirmedOne :one
-insert into emails (address, email_confirmed_at, is_email_confirmed) values ($1, $2, $3) returning id, address, email_confirmed_at, is_email_confirmed
+insert into emails (address, email_confirmed_at) values ($1, $2) returning id, address, email_confirmed_at
 `
 
 type EmailCreateConfirmedOneParams struct {
-	Address          sql.NullString `json:"address"`
-	EmailConfirmedAt sql.NullTime   `json:"email_confirmed_at"`
-	IsEmailConfirmed sql.NullBool   `json:"is_email_confirmed"`
+	Address          string       `json:"address"`
+	EmailConfirmedAt sql.NullTime `json:"email_confirmed_at"`
 }
 
 func (q *Queries) EmailCreateConfirmedOne(ctx context.Context, arg EmailCreateConfirmedOneParams) (Email, error) {
-	row := q.db.QueryRowContext(ctx, emailCreateConfirmedOne, arg.Address, arg.EmailConfirmedAt, arg.IsEmailConfirmed)
+	row := q.db.QueryRowContext(ctx, emailCreateConfirmedOne, arg.Address, arg.EmailConfirmedAt)
 	var i Email
-	err := row.Scan(
-		&i.ID,
-		&i.Address,
-		&i.EmailConfirmedAt,
-		&i.IsEmailConfirmed,
-	)
+	err := row.Scan(&i.ID, &i.Address, &i.EmailConfirmedAt)
 	return i, err
 }
 
 const emailCreateOne = `-- name: EmailCreateOne :one
-insert into emails (address) values ($1) returning id, address, email_confirmed_at, is_email_confirmed
+insert into emails (address) values ($1) returning id, address, email_confirmed_at
 `
 
-func (q *Queries) EmailCreateOne(ctx context.Context, address sql.NullString) (Email, error) {
+func (q *Queries) EmailCreateOne(ctx context.Context, address string) (Email, error) {
 	row := q.db.QueryRowContext(ctx, emailCreateOne, address)
 	var i Email
-	err := row.Scan(
-		&i.ID,
-		&i.Address,
-		&i.EmailConfirmedAt,
-		&i.IsEmailConfirmed,
-	)
+	err := row.Scan(&i.ID, &i.Address, &i.EmailConfirmedAt)
 	return i, err
 }
 
 const emailDeleteByAddress = `-- name: EmailDeleteByAddress :one
-delete from emails where id = $1 returning id, address, email_confirmed_at, is_email_confirmed
+delete from emails where address = $1 returning id, address, email_confirmed_at
 `
 
-func (q *Queries) EmailDeleteByAddress(ctx context.Context, id int64) (Email, error) {
-	row := q.db.QueryRowContext(ctx, emailDeleteByAddress, id)
+func (q *Queries) EmailDeleteByAddress(ctx context.Context, address string) (Email, error) {
+	row := q.db.QueryRowContext(ctx, emailDeleteByAddress, address)
 	var i Email
-	err := row.Scan(
-		&i.ID,
-		&i.Address,
-		&i.EmailConfirmedAt,
-		&i.IsEmailConfirmed,
-	)
+	err := row.Scan(&i.ID, &i.Address, &i.EmailConfirmedAt)
 	return i, err
 }
 
 const emailDeleteById = `-- name: EmailDeleteById :one
-delete from emails where id = $1 returning id, address, email_confirmed_at, is_email_confirmed
+delete from emails where id = $1 returning id, address, email_confirmed_at
 `
 
 func (q *Queries) EmailDeleteById(ctx context.Context, id int64) (Email, error) {
 	row := q.db.QueryRowContext(ctx, emailDeleteById, id)
 	var i Email
-	err := row.Scan(
-		&i.ID,
-		&i.Address,
-		&i.EmailConfirmedAt,
-		&i.IsEmailConfirmed,
-	)
+	err := row.Scan(&i.ID, &i.Address, &i.EmailConfirmedAt)
+	return i, err
+}
+
+const emailGetOneByAddress = `-- name: EmailGetOneByAddress :one
+select id, address, email_confirmed_at from emails where address = $1 limit 1
+`
+
+func (q *Queries) EmailGetOneByAddress(ctx context.Context, address string) (Email, error) {
+	row := q.db.QueryRowContext(ctx, emailGetOneByAddress, address)
+	var i Email
+	err := row.Scan(&i.ID, &i.Address, &i.EmailConfirmedAt)
+	return i, err
+}
+
+const emailGetOneById = `-- name: EmailGetOneById :one
+select id, address, email_confirmed_at from emails where id = $1 limit 1
+`
+
+func (q *Queries) EmailGetOneById(ctx context.Context, id int64) (Email, error) {
+	row := q.db.QueryRowContext(ctx, emailGetOneById, id)
+	var i Email
+	err := row.Scan(&i.ID, &i.Address, &i.EmailConfirmedAt)
 	return i, err
 }

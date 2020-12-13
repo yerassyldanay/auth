@@ -1,11 +1,11 @@
 package main
 
 import (
+	"auth/api"
+	database "auth/model/sqlc"
 	"database/sql"
 	_ "github.com/lib/pq"
 	"log"
-	"auth/api"
-	database "auth/model/sqlc"
 )
 
 var (
@@ -18,6 +18,10 @@ func main() {
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
+
+	/*
+		TODO: load env values
+	*/
 
 	var query = database.New(connection)
 	server := api.NewServer(query)

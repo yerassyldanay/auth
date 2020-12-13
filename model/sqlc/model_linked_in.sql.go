@@ -9,118 +9,85 @@ import (
 )
 
 const linkedInConfirmById = `-- name: LinkedInConfirmById :one
-update linked_ins set is_linked_in_confirmed = $1, linked_in_confirmed_at = $2
-where id = $3 returning id, login, linked_in_confirmed_at, is_linked_in_confirmed
+update linked_ins set linked_in_confirmed_at = $1
+where id = $2 returning id, login, linked_in_confirmed_at
 `
 
 type LinkedInConfirmByIdParams struct {
-	IsLinkedInConfirmed sql.NullBool `json:"is_linked_in_confirmed"`
 	LinkedInConfirmedAt sql.NullTime `json:"linked_in_confirmed_at"`
 	ID                  int64        `json:"id"`
 }
 
 func (q *Queries) LinkedInConfirmById(ctx context.Context, arg LinkedInConfirmByIdParams) (LinkedIn, error) {
-	row := q.db.QueryRowContext(ctx, linkedInConfirmById, arg.IsLinkedInConfirmed, arg.LinkedInConfirmedAt, arg.ID)
+	row := q.db.QueryRowContext(ctx, linkedInConfirmById, arg.LinkedInConfirmedAt, arg.ID)
 	var i LinkedIn
-	err := row.Scan(
-		&i.ID,
-		&i.Login,
-		&i.LinkedInConfirmedAt,
-		&i.IsLinkedInConfirmed,
-	)
+	err := row.Scan(&i.ID, &i.Login, &i.LinkedInConfirmedAt)
 	return i, err
 }
 
 const linkedInConfirmByLogin = `-- name: LinkedInConfirmByLogin :one
-update linked_ins set is_linked_in_confirmed = $1, linked_in_confirmed_at = $2
-where login = $3 returning id, login, linked_in_confirmed_at, is_linked_in_confirmed
+update linked_ins set linked_in_confirmed_at = $1
+where login = $2 returning id, login, linked_in_confirmed_at
 `
 
 type LinkedInConfirmByLoginParams struct {
-	IsLinkedInConfirmed sql.NullBool   `json:"is_linked_in_confirmed"`
 	LinkedInConfirmedAt sql.NullTime   `json:"linked_in_confirmed_at"`
 	Login               sql.NullString `json:"login"`
 }
 
 func (q *Queries) LinkedInConfirmByLogin(ctx context.Context, arg LinkedInConfirmByLoginParams) (LinkedIn, error) {
-	row := q.db.QueryRowContext(ctx, linkedInConfirmByLogin, arg.IsLinkedInConfirmed, arg.LinkedInConfirmedAt, arg.Login)
+	row := q.db.QueryRowContext(ctx, linkedInConfirmByLogin, arg.LinkedInConfirmedAt, arg.Login)
 	var i LinkedIn
-	err := row.Scan(
-		&i.ID,
-		&i.Login,
-		&i.LinkedInConfirmedAt,
-		&i.IsLinkedInConfirmed,
-	)
+	err := row.Scan(&i.ID, &i.Login, &i.LinkedInConfirmedAt)
 	return i, err
 }
 
 const linkedInCreateOne = `-- name: LinkedInCreateOne :one
-insert into linked_ins (login, linked_in_confirmed_at, is_linked_in_confirmed)
-values ($1, $2, $3) returning id, login, linked_in_confirmed_at, is_linked_in_confirmed
+insert into linked_ins (login, linked_in_confirmed_at)
+values ($1, $2) returning id, login, linked_in_confirmed_at
 `
 
 type LinkedInCreateOneParams struct {
 	Login               sql.NullString `json:"login"`
 	LinkedInConfirmedAt sql.NullTime   `json:"linked_in_confirmed_at"`
-	IsLinkedInConfirmed sql.NullBool   `json:"is_linked_in_confirmed"`
 }
 
 func (q *Queries) LinkedInCreateOne(ctx context.Context, arg LinkedInCreateOneParams) (LinkedIn, error) {
-	row := q.db.QueryRowContext(ctx, linkedInCreateOne, arg.Login, arg.LinkedInConfirmedAt, arg.IsLinkedInConfirmed)
+	row := q.db.QueryRowContext(ctx, linkedInCreateOne, arg.Login, arg.LinkedInConfirmedAt)
 	var i LinkedIn
-	err := row.Scan(
-		&i.ID,
-		&i.Login,
-		&i.LinkedInConfirmedAt,
-		&i.IsLinkedInConfirmed,
-	)
+	err := row.Scan(&i.ID, &i.Login, &i.LinkedInConfirmedAt)
 	return i, err
 }
 
 const linkedInDeleteById = `-- name: LinkedInDeleteById :one
-delete from linked_ins where id = $1 returning id, login, linked_in_confirmed_at, is_linked_in_confirmed
+delete from linked_ins where id = $1 returning id, login, linked_in_confirmed_at
 `
 
 func (q *Queries) LinkedInDeleteById(ctx context.Context, id int64) (LinkedIn, error) {
 	row := q.db.QueryRowContext(ctx, linkedInDeleteById, id)
 	var i LinkedIn
-	err := row.Scan(
-		&i.ID,
-		&i.Login,
-		&i.LinkedInConfirmedAt,
-		&i.IsLinkedInConfirmed,
-	)
+	err := row.Scan(&i.ID, &i.Login, &i.LinkedInConfirmedAt)
 	return i, err
 }
 
 const linkedInDeleteByLogin = `-- name: LinkedInDeleteByLogin :one
-delete from linked_ins where login = $1 returning id, login, linked_in_confirmed_at, is_linked_in_confirmed
+delete from linked_ins where login = $1 returning id, login, linked_in_confirmed_at
 `
 
 func (q *Queries) LinkedInDeleteByLogin(ctx context.Context, login sql.NullString) (LinkedIn, error) {
 	row := q.db.QueryRowContext(ctx, linkedInDeleteByLogin, login)
 	var i LinkedIn
-	err := row.Scan(
-		&i.ID,
-		&i.Login,
-		&i.LinkedInConfirmedAt,
-		&i.IsLinkedInConfirmed,
-	)
+	err := row.Scan(&i.ID, &i.Login, &i.LinkedInConfirmedAt)
 	return i, err
 }
 
 const linkedInGetById = `-- name: LinkedInGetById :one
-select id, login, linked_in_confirmed_at, is_linked_in_confirmed from linked_ins where id = $1 limit 1
+select id, login, linked_in_confirmed_at from linked_ins where id = $1 limit 1
 `
 
 func (q *Queries) LinkedInGetById(ctx context.Context, id int64) (LinkedIn, error) {
 	row := q.db.QueryRowContext(ctx, linkedInGetById, id)
 	var i LinkedIn
-	err := row.Scan(
-		&i.ID,
-		&i.Login,
-		&i.LinkedInConfirmedAt,
-		&i.IsLinkedInConfirmed,
-	)
+	err := row.Scan(&i.ID, &i.Login, &i.LinkedInConfirmedAt)
 	return i, err
 }

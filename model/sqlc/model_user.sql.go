@@ -9,53 +9,50 @@ import (
 )
 
 const userCreateOne = `-- name: UserCreateOne :one
-insert into users (first_name, last_name, credential_id, email_id, phone_id, linked_in_id, is_confirmed, role_id, created_at)
-values ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning id, first_name, last_name, avatar_uri, credential_id, email_id, phone_id, linked_in_id, created_at, is_confirmed, role_id
+insert into users (name, password, description, email_id, phone_id, linked_in_id, role_id, created_at)
+values ($1, $2, $3, $4, $5, $6, $7, $8) returning id, name, description, password, avatar_uri, email_id, phone_id, linked_in_id, created_at, role_id
 `
 
 type UserCreateOneParams struct {
-	FirstName    string        `json:"first_name"`
-	LastName     string        `json:"last_name"`
-	CredentialID sql.NullInt64 `json:"credential_id"`
-	EmailID      sql.NullInt64 `json:"email_id"`
-	PhoneID      sql.NullInt64 `json:"phone_id"`
-	LinkedInID   sql.NullInt64 `json:"linked_in_id"`
-	IsConfirmed  sql.NullBool  `json:"is_confirmed"`
-	RoleID       sql.NullInt64 `json:"role_id"`
-	CreatedAt    sql.NullTime  `json:"created_at"`
+	Name        string         `json:"name"`
+	Password    sql.NullString `json:"password"`
+	Description sql.NullString `json:"description"`
+	EmailID     sql.NullInt64  `json:"email_id"`
+	PhoneID     sql.NullInt64  `json:"phone_id"`
+	LinkedInID  sql.NullInt64  `json:"linked_in_id"`
+	RoleID      sql.NullInt64  `json:"role_id"`
+	CreatedAt   sql.NullTime   `json:"created_at"`
 }
 
 func (q *Queries) UserCreateOne(ctx context.Context, arg UserCreateOneParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, userCreateOne,
-		arg.FirstName,
-		arg.LastName,
-		arg.CredentialID,
+		arg.Name,
+		arg.Password,
+		arg.Description,
 		arg.EmailID,
 		arg.PhoneID,
 		arg.LinkedInID,
-		arg.IsConfirmed,
 		arg.RoleID,
 		arg.CreatedAt,
 	)
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.FirstName,
-		&i.LastName,
+		&i.Name,
+		&i.Description,
+		&i.Password,
 		&i.AvatarUri,
-		&i.CredentialID,
 		&i.EmailID,
 		&i.PhoneID,
 		&i.LinkedInID,
 		&i.CreatedAt,
-		&i.IsConfirmed,
 		&i.RoleID,
 	)
 	return i, err
 }
 
 const userDeleteById = `-- name: UserDeleteById :one
-delete from users where id = $1 returning id, first_name, last_name, avatar_uri, credential_id, email_id, phone_id, linked_in_id, created_at, is_confirmed, role_id
+delete from users where id = $1 returning id, name, description, password, avatar_uri, email_id, phone_id, linked_in_id, created_at, role_id
 `
 
 func (q *Queries) UserDeleteById(ctx context.Context, id int64) (User, error) {
@@ -63,22 +60,21 @@ func (q *Queries) UserDeleteById(ctx context.Context, id int64) (User, error) {
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.FirstName,
-		&i.LastName,
+		&i.Name,
+		&i.Description,
+		&i.Password,
 		&i.AvatarUri,
-		&i.CredentialID,
 		&i.EmailID,
 		&i.PhoneID,
 		&i.LinkedInID,
 		&i.CreatedAt,
-		&i.IsConfirmed,
 		&i.RoleID,
 	)
 	return i, err
 }
 
 const userGetById = `-- name: UserGetById :one
-select id, first_name, last_name, avatar_uri, credential_id, email_id, phone_id, linked_in_id, created_at, is_confirmed, role_id from users where id = $1 limit 1
+select id, name, description, password, avatar_uri, email_id, phone_id, linked_in_id, created_at, role_id from users where id = $1 limit 1
 `
 
 func (q *Queries) UserGetById(ctx context.Context, id int64) (User, error) {
@@ -86,22 +82,67 @@ func (q *Queries) UserGetById(ctx context.Context, id int64) (User, error) {
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.FirstName,
-		&i.LastName,
+		&i.Name,
+		&i.Description,
+		&i.Password,
 		&i.AvatarUri,
-		&i.CredentialID,
 		&i.EmailID,
 		&i.PhoneID,
 		&i.LinkedInID,
 		&i.CreatedAt,
-		&i.IsConfirmed,
+		&i.RoleID,
+	)
+	return i, err
+}
+
+const userGetOneByEmailAddress = `-- name: UserGetOneByEmailAddress :one
+select u.id, u.name, u.description, u.password, u.avatar_uri, u.email_id, u.phone_id, u.linked_in_id, u.created_at, u.role_id from users u join emails e on e.id = u.email_id
+where e.address = $1 limit 1
+`
+
+func (q *Queries) UserGetOneByEmailAddress(ctx context.Context, address string) (User, error) {
+	row := q.db.QueryRowContext(ctx, userGetOneByEmailAddress, address)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.Password,
+		&i.AvatarUri,
+		&i.EmailID,
+		&i.PhoneID,
+		&i.LinkedInID,
+		&i.CreatedAt,
+		&i.RoleID,
+	)
+	return i, err
+}
+
+const userGetOneByEmailId = `-- name: UserGetOneByEmailId :one
+select u.id, u.name, u.description, u.password, u.avatar_uri, u.email_id, u.phone_id, u.linked_in_id, u.created_at, u.role_id from users u join emails e on e.id = u.email_id
+where e.id = $1 limit 1
+`
+
+func (q *Queries) UserGetOneByEmailId(ctx context.Context, id int64) (User, error) {
+	row := q.db.QueryRowContext(ctx, userGetOneByEmailId, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.Password,
+		&i.AvatarUri,
+		&i.EmailID,
+		&i.PhoneID,
+		&i.LinkedInID,
+		&i.CreatedAt,
 		&i.RoleID,
 	)
 	return i, err
 }
 
 const userGetPreloadedById = `-- name: UserGetPreloadedById :one
-select u.id, u.first_name, u.last_name, u.avatar_uri, u.credential_id, u.email_id, u.phone_id, u.linked_in_id, u.created_at, u.is_confirmed, u.role_id, e.id, e.address, e.email_confirmed_at, e.is_email_confirmed, p.id, li.id, li.login, li.linked_in_confirmed_at, li.is_linked_in_confirmed from users u join credentials c on c.id = u.credential_id
+select u.id, u.name, u.description, u.password, u.avatar_uri, u.email_id, u.phone_id, u.linked_in_id, u.created_at, u.role_id, e.id, e.address, e.email_confirmed_at, p.id, li.id, li.login, li.linked_in_confirmed_at from users u
 join emails e on e.id = u.email_id
 join phones p on p.id = u.phone_id
 join linked_ins li on li.id = u.linked_in_id
@@ -110,25 +151,22 @@ where u.id = $1
 
 type UserGetPreloadedByIdRow struct {
 	ID                  int64          `json:"id"`
-	FirstName           string         `json:"first_name"`
-	LastName            string         `json:"last_name"`
+	Name                string         `json:"name"`
+	Description         sql.NullString `json:"description"`
+	Password            sql.NullString `json:"password"`
 	AvatarUri           sql.NullString `json:"avatar_uri"`
-	CredentialID        sql.NullInt64  `json:"credential_id"`
 	EmailID             sql.NullInt64  `json:"email_id"`
 	PhoneID             sql.NullInt64  `json:"phone_id"`
 	LinkedInID          sql.NullInt64  `json:"linked_in_id"`
 	CreatedAt           sql.NullTime   `json:"created_at"`
-	IsConfirmed         sql.NullBool   `json:"is_confirmed"`
 	RoleID              sql.NullInt64  `json:"role_id"`
 	ID_2                int64          `json:"id_2"`
-	Address             sql.NullString `json:"address"`
+	Address             string         `json:"address"`
 	EmailConfirmedAt    sql.NullTime   `json:"email_confirmed_at"`
-	IsEmailConfirmed    sql.NullBool   `json:"is_email_confirmed"`
 	ID_3                int64          `json:"id_3"`
 	ID_4                int64          `json:"id_4"`
 	Login               sql.NullString `json:"login"`
 	LinkedInConfirmedAt sql.NullTime   `json:"linked_in_confirmed_at"`
-	IsLinkedInConfirmed sql.NullBool   `json:"is_linked_in_confirmed"`
 }
 
 func (q *Queries) UserGetPreloadedById(ctx context.Context, id int64) (UserGetPreloadedByIdRow, error) {
@@ -136,31 +174,28 @@ func (q *Queries) UserGetPreloadedById(ctx context.Context, id int64) (UserGetPr
 	var i UserGetPreloadedByIdRow
 	err := row.Scan(
 		&i.ID,
-		&i.FirstName,
-		&i.LastName,
+		&i.Name,
+		&i.Description,
+		&i.Password,
 		&i.AvatarUri,
-		&i.CredentialID,
 		&i.EmailID,
 		&i.PhoneID,
 		&i.LinkedInID,
 		&i.CreatedAt,
-		&i.IsConfirmed,
 		&i.RoleID,
 		&i.ID_2,
 		&i.Address,
 		&i.EmailConfirmedAt,
-		&i.IsEmailConfirmed,
 		&i.ID_3,
 		&i.ID_4,
 		&i.Login,
 		&i.LinkedInConfirmedAt,
-		&i.IsLinkedInConfirmed,
 	)
 	return i, err
 }
 
 const userSetAvatarUriById = `-- name: UserSetAvatarUriById :one
-update users set avatar_uri = $1 where id = $2 returning id, first_name, last_name, avatar_uri, credential_id, email_id, phone_id, linked_in_id, created_at, is_confirmed, role_id
+update users set avatar_uri = $1 where id = $2 returning id, name, description, password, avatar_uri, email_id, phone_id, linked_in_id, created_at, role_id
 `
 
 type UserSetAvatarUriByIdParams struct {
@@ -173,43 +208,14 @@ func (q *Queries) UserSetAvatarUriById(ctx context.Context, arg UserSetAvatarUri
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.FirstName,
-		&i.LastName,
+		&i.Name,
+		&i.Description,
+		&i.Password,
 		&i.AvatarUri,
-		&i.CredentialID,
 		&i.EmailID,
 		&i.PhoneID,
 		&i.LinkedInID,
 		&i.CreatedAt,
-		&i.IsConfirmed,
-		&i.RoleID,
-	)
-	return i, err
-}
-
-const userUpdateConfirmedById = `-- name: UserUpdateConfirmedById :one
-update users set is_confirmed = $1 where id = $2 returning id, first_name, last_name, avatar_uri, credential_id, email_id, phone_id, linked_in_id, created_at, is_confirmed, role_id
-`
-
-type UserUpdateConfirmedByIdParams struct {
-	IsConfirmed sql.NullBool `json:"is_confirmed"`
-	ID          int64        `json:"id"`
-}
-
-func (q *Queries) UserUpdateConfirmedById(ctx context.Context, arg UserUpdateConfirmedByIdParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, userUpdateConfirmedById, arg.IsConfirmed, arg.ID)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.FirstName,
-		&i.LastName,
-		&i.AvatarUri,
-		&i.CredentialID,
-		&i.EmailID,
-		&i.PhoneID,
-		&i.LinkedInID,
-		&i.CreatedAt,
-		&i.IsConfirmed,
 		&i.RoleID,
 	)
 	return i, err
