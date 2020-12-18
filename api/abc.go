@@ -12,13 +12,24 @@ type Server struct {
 	router		*gin.Engine
 }
 
-func NewServer(query database.Querier) *Server {
-	server := &Server{
-		query: query,
-	}
-	router := gin.Default()
+func NewServer(connection *sql.DB) *Server {
+	gin.SetMode(gin.TestMode)
 
-	//router.POST("/board", server.S)
+	server := &Server{
+		query: database.New(connection),
+		db: connection,
+	}
+	router := gin.New()
+	router.Use(gin.Recovery())
+	router.Use(gin.Logger())
+
+	v1 := router.Group("/v1")
+
+	// sign
+	v1.POST("/sign-up/email", server.SignUpSendHashToEmailAddress)
+
+	// confirm
+	v1.POST("/confirmation/email", server.SignUpConfirmHashFromEmail)
 
 	server.router = router
 	return server

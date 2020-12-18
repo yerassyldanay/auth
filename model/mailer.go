@@ -45,7 +45,9 @@ func (mqi *MailerQueue) Handle(ctx context.Context) {
 			return
 		case notifyMessage := <- mqi.NotificationChannel:
 
-			//continue
+			//fmt.Println("got message: ", notifyMessage)
+
+			continue
 
 			if len(notifyMessage.GetToList()) < 1 {
 				continue

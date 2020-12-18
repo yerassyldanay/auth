@@ -15,4 +15,4 @@
 # vendor/
 
 .idea
-./environment/*.env
+./environment/auth.env

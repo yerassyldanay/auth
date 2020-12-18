@@ -2,30 +2,31 @@ package main
 
 import (
 	"auth/api"
-	database "auth/model/sqlc"
+	"auth/utils/config"
 	"database/sql"
 	_ "github.com/lib/pq"
 	"log"
 )
 
-var (
-	dbName = "postgres"
-	dbSource = "postgres://simple:simple@localhost:8101/simple?sslmode=disable"
-)
-
 func main() {
-	connection, err := sql.Open(dbName, dbSource)
+
+	// loads env variables from the directory of ./environment
+	configuration, err := config.LoadConfig("./environment")
+	if err != nil {
+		log.Fatal("could not load env variables: ", err)
+	}
+
+	// connect to database
+	connection, err := sql.Open(configuration.DbName, configuration.DbSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
+	defer connection.Close()
 
-	/*
-		TODO: load env values
-	*/
+	// create a new server
+	server := api.NewServer(connection)
 
-	var query = database.New(connection)
-	server := api.NewServer(query)
-
+	// start a server
 	err = server.Start("0.0.0.0:8100")
 	if err != nil {
 		log.Fatal("cannot start server:", err)

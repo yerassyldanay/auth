@@ -4,9 +4,9 @@ create table users (
     description             varchar            default '',
     password        varchar             default '',
     avatar_uri           varchar,
-    email_id        bigserial,
-    phone_id        bigserial,
-    linked_in_id     bigserial,
+    email_id        bigint default 0,
+    phone_id        bigint default 0,
+    linked_in_id     bigint default 0,
     created_at         timestamptz             default 'now()'
 );
 

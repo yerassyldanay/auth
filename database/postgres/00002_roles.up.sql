@@ -12,8 +12,8 @@ create table permissions (
 );
 
 create table role_and_permissions (
-                                      role_id     bigserial,
-                                      permission_id       bigserial
+                                      role_id     bigint not null ,
+                                      permission_id       bigint not null
 );
 
 alter table role_and_permissions add foreign key (role_id) references roles (id);

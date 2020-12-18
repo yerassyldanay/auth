@@ -45,8 +45,8 @@ type Role struct {
 }
 
 type RoleAndPermission struct {
-	RoleID       sql.NullInt64 `json:"role_id"`
-	PermissionID sql.NullInt64 `json:"permission_id"`
+	RoleID       int64 `json:"role_id"`
+	PermissionID int64 `json:"permission_id"`
 }
 
 type User struct {

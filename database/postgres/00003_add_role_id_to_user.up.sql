@@ -1,2 +1,2 @@
-alter table users add column role_id bigserial
+alter table users add column role_id bigint
     references roles (id);
